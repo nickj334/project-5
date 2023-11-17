@@ -192,6 +192,9 @@
 					
 				var begin_time = $("input[name='begin_time']").val();
 				var brevet_dist = $("input[name='brevet_dist']").val();
+				
+				$("input[name='begin_time']").val('');
+				$("input[name='brevet_dist']").val('200');
 
 				$(".control").each(function() {
 					// Defining row object
@@ -212,8 +215,14 @@
 							"open": open,
 							"close": close
 						}
+						console.log('row_json inputted is this: ', row_json);
 						rows.push(row_json);
 					} // end of if(km)
+					control_row.find("input[name='miles']").val('');
+					control_row.find("input[name='km']").val('');
+					control_row.find("input[name='location']").val('');
+					control_row.find("input[name='open']").val('');
+					control_row.find("input[name='close']").val('');
 
 				}); // end of $(".control").each
 
@@ -248,7 +257,7 @@
 						}
 					 }, // end of success: function (data)
 					error: function(err) {
-						console.log("Error: :", err);
+						console.log("Error: ", err);
 					}
 				}); // end of $.ajax
 
