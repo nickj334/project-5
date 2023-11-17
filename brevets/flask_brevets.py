@@ -21,9 +21,10 @@ app = flask.Flask(__name__)
 CONFIG = config.configuration()
 
 # set up mongo client
-client = MongoClient('mongodb://localhost')
-# Use database "idk"
-db = client.idk
+client = MongoClient('mongodb://' + os.environ['MONGODB_HOSTNAME'], 27017)
+
+# Use database "control_sets"
+db = client.control_sets
 # Using collection "lists" in database
 collection = db.lists
 ###
@@ -60,10 +61,10 @@ def _calc_times():
     app.logger.debug("Got a JSON request")
     
     km = request.args.get('km', 999, type=float)
-    start_time = request.args.get("start_time")
-    brevet_dist_km = request.args.get("brevet_dist_km")
+    start_time = request.args.get("start_time", type=str)
+    brevet_dist_km = request.args.get("brevet_dist_km", type=int)
 
-    app.logger.debug("request.args: {}".format(request.args))
+    # app.logger.debug("request.args: {}".format(request.args))
 
     open_time = acp_times.open_time(km, brevet_dist_km, arrow.get(start_time, 'YYYY-MM-DDTHH:mm'))
     close_time = acp_times.close_time(km, brevet_dist_km, arrow.get(start_time, 'YYYY-MM-DDTHH:mm'))
@@ -93,9 +94,9 @@ def get_rows():
 
 def insert_rows(begin_time, brevet_dist, rows):
     '''
-    inserts a new list of rows into database "idk", stores into the collection "lists" (probably going to change this to control_sets)
+    inserts a new list of rows into database "control_sets", stores into the collection "lists"
 
-    Inputs the begin_time (string? arrow object?), brevet_dist (string), rows(list of dictionaries)
+    Inputs the begin_time (string), brevet_dist (string), rows(list of dictionaries)
 
     Returns the unique ID assigned to the document by mongo (primary key)
     '''
@@ -105,7 +106,8 @@ def insert_rows(begin_time, brevet_dist, rows):
         "brevet_dist": brevet_dist,
         "rows": rows
     })
-
+    
+    app.logger.debug('insert id is: ', output.inserted_id)
     _id = output.inserted_id # This is the primary key mongo assigns to the inserted document
     return str(_id)
 
@@ -119,7 +121,9 @@ def _submit():
     try: 
         # Read the entire body of request as JSON
         # This will fail if the request body is not a JSON
-        input_json = request.json
+        # app.logger.debug('input_json is: ', flask.request.json)
+        input_json = flask.request.json
+        app.logger.debug('input_json is: ', input_json)
         # If successful, this is now in dictionary format 
         begin_time = input_json["begin_time"]
         brevet_dist = input_json["brevet_dist"]

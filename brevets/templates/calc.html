@@ -185,16 +185,15 @@
 	 $('#submit').click(
 		function(event) {
 			event.preventDefault();
-				//window.alert("No dont do that");
 
 				// Empty list that will be updated with users control distance inputs
 				var rows = [];
 					
-				var begin_time = $("input[name='begin_time']").val();
-				var brevet_dist = $("input[name='brevet_dist']").val();
+				var begin_time = $('#begin_date').val();
+				var brevet_dist = $('#brevet_dist_km').val();
 				
-				$("input[name='begin_time']").val('');
-				$("input[name='brevet_dist']").val('200');
+				$('#begin_date').val('');
+				$('#brevet_dist_km').val('200');
 
 				$(".control").each(function() {
 					// Defining row object
@@ -215,7 +214,6 @@
 							"open": open,
 							"close": close
 						}
-						console.log('row_json inputted is this: ', row_json);
 						rows.push(row_json);
 					} // end of if(km)
 					control_row.find("input[name='miles']").val('');
@@ -225,6 +223,12 @@
 					control_row.find("input[name='close']").val('');
 
 				}); // end of $(".control").each
+				
+				var failed = false
+				if (rows.length == 0) {
+					alert('No Controls inputted!');
+					failed = true
+				}
 
 				// Create the data to send to flask
 				var controls = {
@@ -235,31 +239,33 @@
 				// Here we have all of the information the user inputted
 				// We can now send a POST request so that it can be stored
 				// in the database
-				$.ajax({
-					// expect json responses from backend
-					dataType: 'json',
-					// Specify we are sending JSON
-					contentType: "application/json",
-					// Request method: POST
-					type: 'POST',
-					// URL
-					url: SUBMIT_URL,
-					// Converting our data into a string
-					data: JSON.stringify(controls),
-					// On a successful response from flask
-					success: function(data) {
-					// Check the status code given by flask
-						if (data.status == 1) {
-							console.log("Succesfully inserted! Response: ", data);
+				if (!failed) {
+					$.ajax({
+						// expect json responses from backend
+						dataType: 'json',
+						// Specify we are sending JSON
+						contentType: "application/json",
+						// Request method: POST
+						type: 'POST',
+						// URL
+						url: SUBMIT_URL,
+						// Converting our data into a string
+						data: JSON.stringify(controls),
+						// On a successful response from flask
+						success: function(data) {
+						// Check the status code given by flask
+							if (data.status == 1) {
+								console.log("Succesfully inserted! Response: ", data);
+							}
+							else {
+								console.log("Insertion Failed: ", data);
+							}
+					 	}, // end of success: function (data)
+						error: function(err) {
+							console.log("Error: ", err);
 						}
-						else {
-							console.log("Insertion Failed: ", data);
-						}
-					 }, // end of success: function (data)
-					error: function(err) {
-						console.log("Error: ", err);
-					}
-				}); // end of $.ajax
+					}); // end of $.ajax
+				}
 
 		}); // end of submit.click - function(event)
 
@@ -272,9 +278,9 @@
 						console.log(data);
 						if (data.status == 1) {
 							console.log("Successfully fetched: ", data);
-							var begin_time = $('#begin_time').val(data.result.begin_time);
+							var begin_time = $('#begin_date').val(data.result.begin_time);
 							var brevet_dist = $('#brevet_dist_km').val(data.result.brevet_dist);
-							var controls = data.result.controls;
+							var controls = data.result.rows;
 
 							var num_controls = controls.length;
 
@@ -288,11 +294,11 @@
 								row.find("input[name='close']").val('');
 
 								if (index < num_controls) {
-									row.find("input[name='miles']").val(data.result.controls[index].miles);
-									row.find("input[name='km']").val(data.result.controls[index].km);
-									row.find("input[name='location']").val(data.result.controls[index].locale);
-									row.find("input[name='open']").val(data.result.controls[index].open);
-		 							row.find("input[name='close']").val(data.result.controls[index].open);
+									row.find("input[name='miles']").val(data.result.rows[index].miles);
+									row.find("input[name='km']").val(data.result.rows[index].km);
+									row.find("input[name='location']").val(data.result.rows[index].locale);
+									row.find("input[name='open']").val(data.result.rows[index].open);
+		 							row.find("input[name='close']").val(data.result.rows[index].open);
 
 								}
 			

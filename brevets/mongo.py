@@ -14,9 +14,6 @@ db = client.test_inputs
 # Using collection "test_lists"
 collection = db.test_lists
 
-TIME1 = "2023-07-01T00:00"
-
-
 def insert_attempt(begin_time, brevet_dist, rows):
 
     output = collection.insert_one({
