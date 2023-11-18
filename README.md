@@ -1,51 +1,42 @@
-# UOCIS322 - Project 5 #
-Brevet time calculator with MongoDB!
+Nickolas Johnson
 
-## Overview
+njohnso3@uoregon.edu
 
-You'll add a storage to your previous project using MongoDB and `docker-compose`.
-As we discussed, `docker-compose` makes it easier to create, manage and connect multiple container to create a single service comprised of different sub-services.
 
-Presently, there's only a placeholder directory for your Flask app, and a `docker-compose` configuration file. You will copy over `brevets/` from your completed project 4, add a MongoDB service to docker-compose and your Flask app. You will also add two buttons named `Submit` and `Display` to the webpage. `Submit` must store the information (brevet distance, start time, checkpoints and their opening and closing times) in the database (overwriting existing ones). `Display` will fetch the information from the database and fill in the form with them.
 
-Recommended: Review [MongoDB README](MONGODB.md) and[Docker Compose README](COMPOSE.md).
+APPLICATION
 
-## Tasks
+This application determines control open and close times for a brevet. A brevet is a timed, long distance road cycling event. To control the speed that riders are riding the
+course, there are 'controls' (similar to checkpoints) that have certain times that they open or close depending on a universal minimum and maximum speed allowed during certain
+intervals of a race. The intervals are listed below, along with their minimum and maximum speeds allowed within the given interval, all in Km/Hr:
 
-1. Add two buttons `Submit` and `Display` in the ACP calculator page.
+	0 - 200: Max speed: 34, Min speed: 15
+	200 - 400: Max speed: 32, Min speed: 15
+	400 - 600: Max speed: 30, Min speed: 15
+	600 - 1000: Max speed: 28, Min speed: 11.428
+	1000 - 1300: Max speed: 26, Min speed: 13.333
 
-	- Upon clicking the `Submit` button, the control times should be inserted into a MongoDB database, and the form should be cleared (reset) **without** refreshing the page.
+ALGORITHM
 
-	- Upon clicking the `Display` button, the entries from the database should be filled into the existing page.
+The algorithm for this is fairly simple and contains a few special edge cases. In order to account for different minimum and maximum speeds in each distance span, I created
+a couple of dictionaries containing information for each distance span. Then I looped through each distance span individually and had two cases to check. For case 1, if the
+control point is within the distance span, then I find the amount of time it takes to get to the control point from the beginning(calculating with min/max speed depending on if 
+I am in open time or close time function). Or case 2 where it is not within the distance span. Here I get the length of the distance span divided by min/max speed, multiplied
+by 60. This will give me the minutes that it takes to cover the distance span at min/max speed. These two cases are run through for each distance span and eventually you add all
+the minutes up to get the total minute displacement from the start time and return this value.
 
-	- Handle error cases appropriately. For example, Submit should return an error if no control times are input. One can imagine many such cases: you'll come up with as many cases as possible.
 
-2. An automated `nose` test suite with at least 2 test cases: at least one for for DB insertion and one for retrieval.
+USING START
 
-3. Update README.md with brevet control time calculation rules (you were supposed to do this for Project 4), and additional information regarding this project.
-	- This project will be peer-reviewed, so be thorough.
+First you need to download Docker. You then can clone this repository and type "Docker build -t myimagename ." Note the '.' at the end of the commang. To run the the 
+image in a container, type "docker run -p5000:5000 myimage". Your application is now running. View your web app by going to http://localhost:5000 in a browser.
+If you're running an apple computer, then you may want to run with -p5001:5000 as port 5000 is usually used for other programs. Then you can provide the given inputs 
+specified in the webpage and it should give you open and close times.  
 
-## Grading Rubric
 
-* If your code works as expected: 100 points. This includes:
-	* Front-end implementation (`Submit` and `Display`).
-	
-	* Back-end implementation (Connecting to MongoDB, insertion and selection).
-	
-	* AJAX interaction between the frontend and backend (AJAX for `Submit` and `Display`).
-	
-	* Updating `README` with a clear specification (including details from Project 4).
-	
-	* Handling errors correctly.
-	
-	* Writing at least 2 correct tests using nose (put them in `tests`, follow Project 3 if necessary), and all should pass.
+SUBMIT/DISPLAY
 
-* If DB operations do not work as expected (either submit fails to store information, or display fails to retrieve and show information correctly), 60 points will be docked.
-
-* If database-related tests are not found in `brevets/tests/`, or are incomplete, or do not pass, 20 points will be docked.
-
-* If docker does not build/run correctly, or the yaml file is not updated correctly, 5 will be assigned assuming README is updated.
-
-## Authors
-
-Michal Young, Ram Durairajan. Updated by Ali Hassani.
+These two buttons at the bottom of the site will insert/fetch the data provided within the rows. The submit button, when pressed, will take the degin date, brevet distance, 
+and each value within the rows: mile length, kilometer length, location, open time, and close time. Once grabbed it will insert it into the mongodb database.
+After this it will clear all values in the website to their default state. The Display button will grab the most recent insertion into the database and will change
+all values within the site to the values grabbed from insertion ("Submit"). 

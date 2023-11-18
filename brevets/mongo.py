@@ -14,6 +14,9 @@ db = client.test_inputs
 # Using collection "test_lists"
 collection = db.test_lists
 
+
+# Directly inserting given data into database
+# Returning id for insert
 def insert_attempt(begin_time, brevet_dist, rows):
 
     output = collection.insert_one({
@@ -25,6 +28,7 @@ def insert_attempt(begin_time, brevet_dist, rows):
     _id = output.inserted_id
     return str(_id)
 
+# Fetching most recent database entry and returns values
 def fetch_attempt():
     inputs = collection.find().sort("_id", -1).limit(1)
 
